@@ -29,8 +29,6 @@ typedef struct v_data{
 void generar_grafo(vertex *p);
 void mostrar(vertex *p);
 void mostrar_body(v_data *p);
-void crear(vertex *p);
-void crear_body(v_data *p);
 void selector_opcion(vertex *p);
 
 
@@ -85,53 +83,6 @@ void mostrar_body(v_data *p){
         mostrar_body(p->sig);
 }
 
-void crear(vertex *p){
-    printf("Ingrese el numero del vertice (0 para terminar):\n");
-    scanf("%d", &p->vertice);
-
-    // Esto es para terminar la carga
-    if (p->vertice==0)
-        p->sig=NULL;
-    // Crea un nuevo vértice
-    else{
-        p->data=(v_data*) malloc(sizeof(v_data));
-        crear_body(p->data);
-        p->sig=(vertex*) malloc(sizeof(vertex));
-        crear(p->sig);
-    }
-}
-
-void crear_body(v_data *p){
-    printf("Ingrese el numero del vertice al cual se conecta (0 para terminar):\n");
-    scanf("%d", &p->vertice);
-
-    // Esto es para terminar la carga
-    if (p->vertice==0)
-        p->sig=NULL;
-    // Crea una nueva conexión
-    else{
-        p->sig=(v_data*) malloc(sizeof(v_data));
-        crear_body(p->sig);
-    }
-}
-
-void calcularMultiplicacion(int dim_x, int dim_y, int mat[][dim_y], int mat_m[][dim_x], int mat_r[][dim_y]){
-    int i;
-    int j;
-    int k;
-
-    printf("Calculando multiplicacion entre matrices\n");
-
-    for (i=0; i<dim_y; i++){
-        for (j=0; j<dim_x; j++){
-            mat_r[i][j] = 0;
-            for (k=0; k<dim_x; k++){
-                mat_r[i][j] += mat[k][j] * mat_m[i][k];
-            }
-        }
-    }
-}
-
 void generar_grafo(vertex *p){
     FILE *archivo;
     int limite = 0;
@@ -139,10 +90,9 @@ void generar_grafo(vertex *p){
     int fila_actual = 0;
     int leido;
     char char_leido;
-    vertex v_actual = NULL;
-    vertex v_anterior = NULL;
-    v_data vdata_actual = NULL;
-    v_data vdata_anterior = NULL;
+    vertex v_actual = (vertex*) malloc(sizeof(vertex));
+    v_data vdata_actual = (v_data*) malloc(sizeof(v_data));
+    v_actual->vertice = 0;
 
     // Leo hasta el final del archivo para obtener la cantidad de lineas = cantidad de columnas = cantidad de vertices a generar
     while((char_leido = fgetc(archivo)) != EOF)
@@ -151,30 +101,38 @@ void generar_grafo(vertex *p){
 
     rewind(archivo);
 
+    // Genero conexiones de punteros iniciales
+    v_actual->data = v_data;
+    p = v_actual;
+
     // Leo el archivo int por int con ayuda de acumuladores de fila y columna
     while (!feof (archivo)){
-        // Lee vertices adyacentes y los guarda
-        vdata_actual = (v_data*) malloc(sizeof(v_data));
-        fscanf(archivo, "%d", vdata_actual->vertice);
+        // Avanza por cada columna (generación de v_data)
+        if (columna_actual != limite){
+            // Lee vertices adyacentes y los guarda
+            fscanf(archivo, "%d", vdata_actual->vertice);
+            vdata_actual->sig = (v_data*) malloc(sizeof(v_data));
+            vdata_actual = vdata_actual->sig;
+        // Si finaliza la fila actual genera nuevos vertex
+        }else{
+            fila_actual++;
+            columna_actual = 0;
+            vdata_actual->sig = NULL;
+            vdata_actual->vertice = -1;
 
-        // En cada inicio de línea genero un nuevo vertex
-        if (columna_actual == 0){
-            v_actual = (vertex*) malloc(sizeof(vertex));
-            v_actual->vertice = fila_actual;
-            v_actual->data = vdata_actual;
+            // Genera nuevo vertex
+            if (fila_actual != limite){
+                v_actual->sig = (vertex*) malloc(sizeof(vertex));
+                v_actual = v_actual->sig;
+                v_actual->vertice = fila_actual;
+            // Finalizó la carga
+            }else{
+                v_actual->sig = NULL;
+                v_actual->vertice = -1;
+            }
         }
 
         columna_actual++;
-
-        // Maneja el final de columnas y filas
-        if (columna_actual == limite){
-            fila_actual++;
-            columna_actual = 0;
-            vdata_actual->vertice = NULL;
-
-            if (fila_actual == limite)
-                v_actual->vertice == NULL;
-        }
     }
     
     fclose (archivo);
