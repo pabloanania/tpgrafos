@@ -16,7 +16,7 @@ p->***->a
 typedef struct vertex{
     int vertice;                    // Nombre del vertice
     struct vertex *sig;             // Vertice siguiente. Orden en que yo quiera poner a los vértices del grafo (ej. A-B-C-D)
-    struct body *data;              // Body con información sobre siguiente conexión o null si no tiene
+    struct v_data *data;              // Body con información sobre siguiente conexión o null si no tiene
 }vertex;
 
 // Nodo "body" - Información sobre las adyacencias(conexiones). Uno por cada conexión de cada vértice
@@ -48,22 +48,18 @@ void selector_opcion(vertex *p){
     do{
         system("cls");
         printf("Seleccione una opcion:\n");
-        printf("1) Ingresar nodos\n");
-        printf("2) Eliminar nodos\n");
-        printf("3) Mostrar el grafo\n");
+        printf("1) Mostrar el grafo \n");
+        printf("2) Validar el grafo\n");
         printf("0) Salir\n");
         scanf("%d", &opcion);
 
         switch (opcion){
             case 1:
-                crear(p);
+                mostrar(p);
                 break;
             case 2:
                 break;
             case 3:
-                mostrar(p);
-                printf("\n");
-                system("pause");
                 break;
         }
     }while(opcion != O_SALIR);
@@ -90,19 +86,23 @@ void generar_grafo(vertex *p){
     int fila_actual = 0;
     int leido;
     char char_leido;
-    vertex v_actual = (vertex*) malloc(sizeof(vertex));
-    v_data vdata_actual = (v_data*) malloc(sizeof(v_data));
+    vertex *v_actual;
+    v_actual = (vertex*) malloc(sizeof(vertex));
+    v_data *vdata_actual;
+    vdata_actual = (v_data*) malloc(sizeof(v_data));
     v_actual->vertice = 0;
 
     // Leo hasta el final del archivo para obtener la cantidad de lineas = cantidad de columnas = cantidad de vertices a generar
+    archivo = fopen("matriz.txt","r");
+    printf("Archivo abierto \n");
     while((char_leido = fgetc(archivo)) != EOF)
-        if (ch == '\n')
+        if (char_leido == '\n')
             limite++;
 
     rewind(archivo);
 
     // Genero conexiones de punteros iniciales
-    v_actual->data = v_data;
+    v_actual->data = vdata_actual;
     p = v_actual;
 
     // Leo el archivo int por int con ayuda de acumuladores de fila y columna
@@ -110,7 +110,7 @@ void generar_grafo(vertex *p){
         // Avanza por cada columna (generación de v_data)
         if (columna_actual != limite){
             // Lee vertices adyacentes y los guarda
-            fscanf(archivo, "%d", vdata_actual->vertice);
+            fscanf(archivo, "%d", &vdata_actual->vertice);
             vdata_actual->sig = (v_data*) malloc(sizeof(v_data));
             vdata_actual = vdata_actual->sig;
         // Si finaliza la fila actual genera nuevos vertex
