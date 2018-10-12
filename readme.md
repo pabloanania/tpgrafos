@@ -1,22 +1,6 @@
 # To do:
-* Ingresar la matriz de adyacencia por archivo
-    * Ver porque pierde la referencia
-* Pasar la data de la matriz de adyacencia a la struct generada (vértices y adyacencias)
-* Calcular la cantidad de vértices
-* Calcular la cantidad de aristas
-* Calcular los grados de un vertice
-* Determinar si el grafo es válido
-    * sum(gr(vertices)) = 2 * aristas
-* Informar cuál es el vértice de mayor grado
-* Determinar si es un grafo completo
-    * aristas=(verticesx(vertices-1))/2
-* Determinar si es grafo regular (todos los v el mismo gr)
-    * Recorrer uno por uno los vértices y aplicar funcion calculo de gr
-    * Guardar resultado en variable
-    * Repetir con el siguiente vértice, si es distinto -> FAILED
-    * Si termina y no hay diferencias -> OK
 * Determinar si es un grafo simple
-    * Función verificadora de aristas paralelas:
+    * Función verificadora de aristas paralelas: [SEGUIR FALTA ESTO!]
         * Guarda el int vertice al que se conecta el primer v_data
         * Recorre los v_data del vértice comparando el int guardado en el anterior
         * Si el int no coincide en ningun caso continúa con el v_data siguiente y así hasta terminar el vértice
@@ -46,3 +30,19 @@
     * Verifica con la función anterior si es bipartito
         * Si lo es aplica: aristas<=2xvertices-4
         * Si no lo es aplica: aristas<=3xvertices-6
+
+#Done:
+* Pasar la data de la matriz de adyacencia a la struct generada (vértices y adyacencias)
+* Calcular la cantidad de vértices
+* Calcular la cantidad de aristas
+* Calcular los grados de cada vertice
+    * Informar cuál es el vértice de mayor grado
+* Determinar si el grafo es válido
+    * sum(gr(vertices)) = 2 * aristas
+* Determinar si es un grafo completo
+    * aristas=(verticesx(vertices-1))/2
+* Determinar si es grafo regular (todos los v el mismo gr)
+    * Recorrer uno por uno los vértices y aplicar funcion calculo de gr
+    * Guardar resultado en variable
+    * Repetir con el siguiente vértice, si es distinto -> FAILED
+    * Si termina y no hay diferencias -> OK

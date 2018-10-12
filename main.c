@@ -9,6 +9,7 @@ p->***->a
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define O_SALIR     0
 
@@ -26,9 +27,20 @@ typedef struct v_data{
 }v_data;
 
 
+void pause_screen();
 void generar_grafo(vertex *p);
 void mostrar(vertex *p);
 void mostrar_body(v_data *p);
+int calcular_cantidad_vertices(vertex *p);
+int calcular_cantidad_aristas(vertex *p);
+int calcular_grados_vertice(vertex *v);
+bool grafo_es_valido(vertex *p);
+bool grafo_es_completo(vertex *p);
+bool grafo_es_regular(vertex *p);
+bool grafo_es_simple(vertex *p);
+bool tiene_aristas_paralelas(vertex *p);
+bool tiene_bucles(vertex *p);
+void mostrar_grados_cada_vertice(vertex *p);
 void selector_opcion(vertex *p);
 
 
@@ -50,20 +62,57 @@ void selector_opcion(vertex *p){
         system("cls");
         printf("Seleccione una opcion:\n");
         printf("1) Mostrar el grafo \n");
-        printf("2) Validar el grafo\n");
+        printf("2) Obtener cantidad de vertices\n");
+        printf("3) Obtener cantidad de aristas\n");
+        printf("4) Mostrar los grados de cada vertice\n");
+        printf("5) Determinar si el grafo es valido\n");
+        printf("6) Determinar si el grafo es completo\n");
+        printf("7) Determinar si el grafo es regular\n");
+        printf("8) Determinar si el grafo es simple\n");
         printf("0) Salir\n");
         scanf("%d", &opcion);
+        system("cls");
 
         switch (opcion){
             case 1:
                 mostrar(p);
+                pause_screen();
                 break;
             case 2:
+                printf("\nCantidad de vertices: %d\n", calcular_cantidad_vertices(p));
+                pause_screen();
                 break;
             case 3:
+                printf("\nCantidad de aristas: %d\n", calcular_cantidad_aristas(p));
+                pause_screen();
+                break;
+            case 4:
+                mostrar_grados_cada_vertice(p);
+                pause_screen();
+                break;
+            case 5:
+                printf(grafo_es_valido(p) ? "El grafo es valido\n" : "El grafo NO es valido\n");
+                pause_screen();
+                break;
+            case 6:
+                printf(grafo_es_completo(p) ? "El grafo es completo\n" : "El grafo NO es completo\n");
+                pause_screen();
+                break;
+            case 7:
+                printf(grafo_es_regular(p) ? "El grafo es regular\n" : "El grafo NO es regular\n");
+                pause_screen();
+                break;
+            case 8:
+                printf(tiene_bucles(p) ? "El grafo es regular\n" : "El grafo NO es regular\n");
+                pause_screen();
                 break;
         }
     }while(opcion != O_SALIR);
+}
+
+void pause_screen(){
+    printf("\n");
+    system("pause");
 }
 
 void mostrar(vertex *p){
@@ -80,6 +129,140 @@ void mostrar_body(v_data *p){
         mostrar_body(p->sig);
 }
 
+int calcular_cantidad_vertices(vertex *p){
+    int vertices = 0;
+
+    while (p->sig != NULL){
+        vertices++;
+        p = p->sig;
+    }
+
+    return vertices;
+}
+
+int calcular_cantidad_aristas(vertex *p){
+    int diagonal_actual = 0;
+    int cantidad_aristas = 0;
+    v_data *vdata_actual;
+
+    while (p->sig != NULL){
+        vdata_actual = p->data;
+        while (vdata_actual->sig != NULL){
+            if (vdata_actual->vertice >= diagonal_actual)
+                cantidad_aristas++;
+
+            vdata_actual = vdata_actual->sig;
+        }
+        p = p->sig;
+        diagonal_actual++;
+    }
+
+    return cantidad_aristas;
+}
+
+void mostrar_grados_cada_vertice(vertex *p){
+    int mayor = 0;
+    int grados;
+
+    while (p->sig != NULL){
+        grados = calcular_grados_vertice(p);
+        printf("Los grados del vertice %d son: %d\n", p->vertice, grados);
+
+        if (grados > mayor)
+            mayor = p->vertice;
+
+        p = p->sig;
+    }
+
+    printf("El vertice de mayor grado es: %d\n", mayor);
+}
+
+int calcular_grados_vertice(vertex *v){
+    int grados = 0;
+    v_data *vdata_actual = v->data;
+
+    while (vdata_actual->sig != NULL){
+        grados++;
+        vdata_actual = vdata_actual->sig;
+    }
+
+    return grados;
+}
+
+bool grafo_es_valido(vertex *p){
+    int sum_grados = 0;
+    int aristas = calcular_cantidad_aristas(p);
+
+    while (p->sig != NULL){
+        sum_grados+=calcular_grados_vertice(p);
+        p=p->sig;
+    }
+
+    if (sum_grados == 2 * aristas)
+        return true;
+    else
+        return false;
+}
+
+bool grafo_es_completo(vertex *p){
+    int aristas = calcular_cantidad_aristas(p);
+    int vertices = calcular_cantidad_vertices(p);
+    int calculo = (vertices*(vertices-1))/2;
+
+    if (aristas == calculo)
+        return true;
+    else
+        return false;
+}
+
+bool grafo_es_regular(vertex *p){
+    int grado = -1;
+    bool regular = true;
+
+    while (p->sig != NULL){
+        if (grado == -1)
+            grado = calcular_grados_vertice(p);
+        else if (calcular_grados_vertice(p) != grado)
+            regular = false;
+
+        p = p->sig;
+    }
+
+    return regular;
+}
+
+bool grafo_es_simple(vertex *p){
+    if (!tiene_aristas_paralelas(p) && !tiene_bucles(p))
+        return true;
+    else
+        return false;
+}
+
+bool tiene_aristas_paralelas(vertex *p){
+    // FALTA
+}
+
+bool tiene_bucles(vertex *p){
+    bool bucles = false;
+    int vertice;
+    v_data *vdata_actual;
+
+    while (p->sig != NULL){
+        vertice = p->vertice;
+        vdata_actual = p->data;
+        
+        while (vdata_actual->sig != NULL){
+            if (vdata_actual->vertice == vertice)
+                bucles = true;
+
+            vdata_actual = vdata_actual->sig;
+        }
+        p = p->sig;
+    }
+
+    return bucles;
+}
+
 void generar_grafo(vertex *p){
     FILE *archivo;
     int limite = 0;
@@ -87,10 +270,10 @@ void generar_grafo(vertex *p){
     int fila_actual = 0;
     int leido;
     char char_leido;
+    vertex *v_actual = NULL;
 
     // Leo hasta el final del archivo para obtener la cantidad de lineas = cantidad de columnas = cantidad de vertices a generar
     archivo = fopen("matriz.txt","r");
-    printf("Archivo abierto \n");
     while((char_leido = fgetc(archivo)) != EOF)
         if (char_leido == '\n')
             limite++;
@@ -102,9 +285,10 @@ void generar_grafo(vertex *p){
     v_data *vdata_actual;
     vdata_actual = (v_data*) malloc(sizeof(v_data));
     v_actual->data = vdata_actual;
+    v_actual->vertice = 0;
 
     // Leo el archivo int por int con ayuda de acumuladores de fila y columna
-    while (!feof (archivo)){
+    while (fila_actual != limite){
         // Avanza por cada columna (generación de v_data)
         if (columna_actual != limite){
             // Genera una struct por cada adyacencia
@@ -114,26 +298,28 @@ void generar_grafo(vertex *p){
                 vdata_actual->sig = (v_data*) malloc(sizeof(v_data));
                 vdata_actual = vdata_actual->sig;
             }
+            columna_actual++;
         // Si finaliza la fila actual genera nuevos vertex
         }else{
             fila_actual++;
             columna_actual = 0;
+
+            // Cierra lista enlazada de datos
             vdata_actual->sig = NULL;
             vdata_actual->vertice = -1;
 
-            // Genera nuevo vertex
-            if (fila_actual != limite){
-                v_actual->sig = (vertex*) malloc(sizeof(vertex));
-                v_actual = v_actual->sig;
-                v_actual->vertice = fila_actual;
+            v_actual->sig = (vertex*) malloc(sizeof(vertex));
+            v_actual = v_actual->sig;
+            v_actual->vertice = fila_actual;
+            vdata_actual = (v_data*) malloc(sizeof(v_data));
+            v_actual->data = vdata_actual;
+            
             // Finalizó la carga
-            }else{
+            if (fila_actual == limite){
                 v_actual->sig = NULL;
                 v_actual->vertice = -1;
             }
         }
-
-        columna_actual++;
     }
     
     fclose (archivo);
