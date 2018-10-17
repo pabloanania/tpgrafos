@@ -1,15 +1,4 @@
 # To do:
-* Determinar si es un grafo simple
-    * Función verificadora de aristas paralelas: [SEGUIR FALTA ESTO!]
-        * Guarda el int vertice al que se conecta el primer v_data
-        * Recorre los v_data del vértice comparando el int guardado en el anterior
-        * Si el int no coincide en ningun caso continúa con el v_data siguiente y así hasta terminar el vértice
-        * Repite esto con cada vértice, si no hay coincidencias -> OK
-        * A la primer coincidencia -> FAILED
-    * Función verificadora de bucles:
-        * Guarda el int vertice del struct vertex y lo compara con el int vertice de cada v_data que posee
-        * Si hay alguna coincidencia -> FAILED
-        * De lo contrario sigue con todos los vertices, si no hubo coincidencias -> OK
 * Determinar si es un grafo bipartito
     * Verificar desde el vertex 0 con cuales no se conecta:
         * Generar una nueva lista enlazada (conjunto) de v_data, una por cada vertice
@@ -31,7 +20,7 @@
         * Si lo es aplica: aristas<=2xvertices-4
         * Si no lo es aplica: aristas<=3xvertices-6
 
-#Done:
+# Done:
 * Pasar la data de la matriz de adyacencia a la struct generada (vértices y adyacencias)
 * Calcular la cantidad de vértices
 * Calcular la cantidad de aristas
@@ -46,3 +35,14 @@
     * Guardar resultado en variable
     * Repetir con el siguiente vértice, si es distinto -> FAILED
     * Si termina y no hay diferencias -> OK
+* Determinar si es un grafo simple
+    * Función verificadora de aristas paralelas:
+        * Guarda el int vertice al que se conecta el primer v_data
+        * Recorre los v_data del vértice comparando el int guardado en el anterior
+        * Si el int no coincide en ningun caso continúa con el v_data siguiente y así hasta terminar el vértice
+        * Repite esto con cada vértice, si no hay coincidencias -> OK
+        * A la primer coincidencia -> FAILED
+    * Función verificadora de bucles:
+        * Guarda el int vertice del struct vertex y lo compara con el int vertice de cada v_data que posee
+        * Si hay alguna coincidencia -> FAILED
+        * De lo contrario sigue con todos los vertices, si no hubo coincidencias -> OK

@@ -103,7 +103,7 @@ void selector_opcion(vertex *p){
                 pause_screen();
                 break;
             case 8:
-                printf(tiene_bucles(p) ? "El grafo es regular\n" : "El grafo NO es regular\n");
+                printf(grafo_es_simple(p) ? "El grafo es simple\n" : "El grafo NO es simple\n");
                 pause_screen();
                 break;
         }
@@ -239,7 +239,27 @@ bool grafo_es_simple(vertex *p){
 }
 
 bool tiene_aristas_paralelas(vertex *p){
-    // FALTA
+    bool paralelas = false;
+    int vertice;
+    v_data *vdata_actual;
+    v_data *vdata_comparador;
+
+    while (p->sig != NULL){
+        vdata_actual = p->data;
+        while (vdata_actual->sig != NULL){
+            vdata_comparador = vdata_actual->sig;
+            while (vdata_comparador->sig != NULL){
+                if (vdata_actual->vertice == vdata_comparador->vertice)
+                    paralelas = true;
+
+                vdata_comparador = vdata_comparador->sig;
+            }
+            vdata_actual = vdata_actual->sig;
+        }
+        p = p->sig;
+    }
+
+    return paralelas;
 }
 
 bool tiene_bucles(vertex *p){
@@ -261,6 +281,52 @@ bool tiene_bucles(vertex *p){
     }
 
     return bucles;
+}
+
+void grafo_es_bipartito(vertex *p){
+    // Guarda con que vertices NO se conecta v0
+    v_data *conjunto_inicial = (v_data*) malloc(sizeof(v_data));
+    conjunto_inicial->vertice = p->vertice;
+    // Guarda el primer vertice con el que se conecta v0 y que grupo generan los que no se conectan con este vertice
+    v_data *conjunto_partito = (v_data*) malloc(sizeof(v_data));
+    conjunto_partito->vertice = p->data->vertice;
+}
+
+void generar_no_conexiones(int vertice_comparable, vertex *p, v_data *nc){
+    int cantidad_vertices = calcular_cantidad_vertices(p);
+    v_data *nc_actual = nc;
+    v_data *primer_nc = nc;
+    v_data *vdata_actual;
+    vertex *v_actual;
+    int coincidencias = 0;
+
+    // Genero una lista enlazada con todos los vertices que uso para guardar los que no tiene conexion
+    for (int i=0; i<cantidad_vertices; i++){
+        nc_actual->vertice = i;
+        nc_actual->sig = (v_data*) malloc(sizeof(v_data));
+        nc_actual = nc_actual->sig;
+    }
+    nc_actual->vertice = NULL;
+    nc_actual->sig = -1;
+
+    // "Rebobino" el vector
+    nc_actual = primer_nc;
+
+    // Comparo con la lista con cuales no se conecta, si hay conexion los elimino de nc
+    while (nc_actual->sig != NULL){
+        // Me posiciono en el vertice actual
+        while (v_actual->vertice != vertice_comparable)
+            v_actual = v_actual->sig;
+        
+        vdata_actual = v_actual->data;
+        while (vdata_actual->sig != NULL){
+            if (vdata_actual->vertice == vertice_comparable)
+                coincidencias++;
+        }
+        // Si hay alguna coincidencia elimina el vertice
+        if (coincidencias > 0)
+            
+    }
 }
 
 void generar_grafo(vertex *p){
