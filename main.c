@@ -292,10 +292,11 @@ void grafo_es_bipartito(vertex *p){
     conjunto_partito->vertice = p->data->vertice;
 }
 
-void generar_no_conexiones(int vertice_comparable, vertex *p, v_data *nc){
+void generar_no_conexiones(int vertice_inicial, vertex *p, v_data *nc){
     int cantidad_vertices = calcular_cantidad_vertices(p);
     v_data *nc_actual = nc;
-    v_data *primer_nc = nc;
+    v_data *nc_anterior = NULL;
+    v_data *nc_comparable = nc;
     v_data *vdata_actual;
     vertex *v_actual;
     int coincidencias = 0;
@@ -310,7 +311,7 @@ void generar_no_conexiones(int vertice_comparable, vertex *p, v_data *nc){
     nc_actual->sig = -1;
 
     // "Rebobino" el vector
-    nc_actual = primer_nc;
+    nc_actual = nc;
 
     // Comparo con la lista con cuales no se conecta, si hay conexion los elimino de nc
     while (nc_actual->sig != NULL){
@@ -318,14 +319,22 @@ void generar_no_conexiones(int vertice_comparable, vertex *p, v_data *nc){
         while (v_actual->vertice != vertice_comparable)
             v_actual = v_actual->sig;
         
+        // Compara por todos los vdata del vertice actual a ver si hay coincidencias
         vdata_actual = v_actual->data;
         while (vdata_actual->sig != NULL){
             if (vdata_actual->vertice == vertice_comparable)
                 coincidencias++;
         }
-        // Si hay alguna coincidencia elimina el vertice
-        if (coincidencias > 0)
-            
+
+        // Si hay alguna coincidencia elimina el vdata de la lista enlazada nc
+        if (coincidencias > 0){
+            nc_anterior->sig = nc_actual->sig;
+        }
+        
+        // Avanzo
+        nc_anterior = nc_actual;
+        nc_actual = nc_actual->sig;
+        vertice_comparable = nc_actual->vertice;
     }
 }
 
