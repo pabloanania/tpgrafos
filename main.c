@@ -38,9 +38,13 @@ bool grafo_es_valido(vertex *p);
 bool grafo_es_completo(vertex *p);
 bool grafo_es_regular(vertex *p);
 bool grafo_es_simple(vertex *p);
+bool grafo_es_bipartito(vertex *p);
+bool grafo_es_plano(vertex *p);
 bool tiene_aristas_paralelas(vertex *p);
 bool tiene_bucles(vertex *p);
 void mostrar_grados_cada_vertice(vertex *p);
+v_data* generar_no_conexiones(int vertice_comparable, vertex *p);
+v_data* get_data_from_numero_vertice(int vertice, vertex *p);
 void selector_opcion(vertex *p);
 
 
@@ -69,6 +73,8 @@ void selector_opcion(vertex *p){
         printf("6) Determinar si el grafo es completo\n");
         printf("7) Determinar si el grafo es regular\n");
         printf("8) Determinar si el grafo es simple\n");
+        printf("9) Determinar si el grafo es bipartito\n");
+        printf("10) Determinar si el grafo es plano\n");
         printf("0) Salir\n");
         scanf("%d", &opcion);
         system("cls");
@@ -104,6 +110,14 @@ void selector_opcion(vertex *p){
                 break;
             case 8:
                 printf(grafo_es_simple(p) ? "El grafo es simple\n" : "El grafo NO es simple\n");
+                pause_screen();
+                break;
+            case 9:
+                printf(grafo_es_bipartito(p) ? "El grafo es bipartito\n" : "El grafo NO es bipartito\n");
+                pause_screen();
+                break;
+            case 10:
+                printf(grafo_es_plano(p) ? "El grafo es plano\n" : "El grafo NO es plano\n");
                 pause_screen();
                 break;
         }
@@ -283,59 +297,128 @@ bool tiene_bucles(vertex *p){
     return bucles;
 }
 
-void grafo_es_bipartito(vertex *p){
+bool grafo_es_bipartito(vertex *p){
     // Guarda con que vertices NO se conecta v0
-    v_data *conjunto_inicial = (v_data*) malloc(sizeof(v_data));
-    conjunto_inicial->vertice = p->vertice;
+    v_data *conjunto_inicial = generar_no_conexiones(p->vertice, p);
     // Guarda el primer vertice con el que se conecta v0 y que grupo generan los que no se conectan con este vertice
-    v_data *conjunto_partito = (v_data*) malloc(sizeof(v_data));
-    conjunto_partito->vertice = p->data->vertice;
+    v_data *conjunto_partito = generar_no_conexiones(p->data->vertice, p);
+
+    int cantidad_vertices = calcular_cantidad_vertices(p);
+    int vertice_actual;
+    int apariciones;
+    v_data* vdata_actual;
+
+    // Para que sea bipartito cada vertice debe aparecer solo 1 vez entre los dos conjuntos
+    for (vertice_actual=0; vertice_actual<cantidad_vertices; vertice_actual++){
+        apariciones = 0;
+        vdata_actual = conjunto_inicial;
+        while (vdata_actual->sig != NULL){
+            if (vdata_actual->vertice == vertice_actual)
+                apariciones++;
+
+            vdata_actual = vdata_actual->sig;
+        }
+        vdata_actual = conjunto_partito;
+        while (vdata_actual->sig != NULL){
+            if (vdata_actual->vertice == vertice_actual)
+                apariciones++;
+
+            vdata_actual = vdata_actual->sig;
+        }
+
+        if (apariciones != 1)
+            return false;
+    }
+
+    return true;
 }
 
-void generar_no_conexiones(int vertice_inicial, vertex *p, v_data *nc){
+v_data* generar_no_conexiones(int vertice_comparable, vertex *p){
     int cantidad_vertices = calcular_cantidad_vertices(p);
-    v_data *nc_actual = nc;
-    v_data *nc_anterior = NULL;
-    v_data *nc_comparable = nc;
+    v_data *nc_primero = (v_data*) malloc(sizeof(v_data));
+    v_data *nc_actual = nc_primero;
+    v_data *nc_comparable = nc_primero;
+    v_data *nc_comparable_anterior = NULL;
     v_data *vdata_actual;
     vertex *v_actual;
     int coincidencias = 0;
+    int i;
 
     // Genero una lista enlazada con todos los vertices que uso para guardar los que no tiene conexion
-    for (int i=0; i<cantidad_vertices; i++){
+    for (i=0; i<cantidad_vertices; i++){
         nc_actual->vertice = i;
         nc_actual->sig = (v_data*) malloc(sizeof(v_data));
         nc_actual = nc_actual->sig;
     }
-    nc_actual->vertice = NULL;
-    nc_actual->sig = -1;
+    nc_actual->vertice = -1;
+    nc_actual->sig = NULL;
 
     // "Rebobino" el vector
-    nc_actual = nc;
+    nc_actual = nc_primero;
 
     // Comparo con la lista con cuales no se conecta, si hay conexion los elimino de nc
     while (nc_actual->sig != NULL){
-        // Me posiciono en el vertice actual
-        while (v_actual->vertice != vertice_comparable)
-            v_actual = v_actual->sig;
-        
-        // Compara por todos los vdata del vertice actual a ver si hay coincidencias
-        vdata_actual = v_actual->data;
-        while (vdata_actual->sig != NULL){
-            if (vdata_actual->vertice == vertice_comparable)
-                coincidencias++;
+        while (nc_comparable->sig != NULL){
+            vdata_actual = get_data_from_numero_vertice(nc_comparable->vertice, p);
+
+            while (vdata_actual->sig != NULL){
+                if (vdata_actual->vertice == vertice_comparable)
+                    coincidencias++;
+                
+                vdata_actual = vdata_actual->sig;
+            }
+
+            // Si el vertice comparable actual se conecta con el de la comparativa lo elimino
+            if (coincidencias > 0){
+                if (nc_comparable_anterior != NULL)
+                    nc_comparable_anterior->sig = nc_comparable->sig;
+                // Si es el primer vertice debo cambiar el primero (es el que se devuelve)
+                else
+                    nc_primero = nc_comparable->sig;
+                
+                coincidencias = 0;
+            }
+            else{
+                nc_comparable_anterior = nc_comparable;
+            }
+
+            // Avanza
+            nc_comparable = nc_comparable->sig;
         }
 
-        // Si hay alguna coincidencia elimina el vdata de la lista enlazada nc
-        if (coincidencias > 0){
-            nc_anterior->sig = nc_actual->sig;
-        }
-        
-        // Avanzo
-        nc_anterior = nc_actual;
+        // Obtiene el siguiente vertice comparable
         nc_actual = nc_actual->sig;
         vertice_comparable = nc_actual->vertice;
+        nc_comparable = nc_actual->sig;
     }
+
+    return nc_primero;
+}
+
+v_data* get_data_from_numero_vertice(int vertice, vertex *p){
+    while (p->sig != NULL){
+        if (p->vertice == vertice)
+            return p->data;
+
+        p = p->sig;
+    }
+}
+
+bool grafo_es_plano(vertex *p){
+    printf("Asumiendo que el grafo es conexo...\n");
+    bool plano = false;
+    int cantidad_aristas = calcular_cantidad_aristas(p);
+    int cantidad_vertices = calcular_cantidad_vertices(p);
+
+    if (grafo_es_bipartito(p)){
+        if (cantidad_aristas <= (2*cantidad_vertices - 4))
+            plano = true;
+    }else{
+        if (cantidad_aristas <= (3*cantidad_vertices - 6))
+            plano = true;
+    }
+
+    return plano;
 }
 
 void generar_grafo(vertex *p){
@@ -344,6 +427,7 @@ void generar_grafo(vertex *p){
     int columna_actual = 0;
     int fila_actual = 0;
     int leido;
+    int i;
     char char_leido;
     vertex *v_actual = NULL;
 
@@ -368,7 +452,7 @@ void generar_grafo(vertex *p){
         if (columna_actual != limite){
             // Genera una struct por cada adyacencia
             fscanf(archivo, "%d", &leido);
-            for (int i=0; i<leido; i++){
+            for (i=0; i<leido; i++){
                 vdata_actual->vertice = columna_actual;
                 vdata_actual->sig = (v_data*) malloc(sizeof(v_data));
                 vdata_actual = vdata_actual->sig;
